@@ -93,28 +93,10 @@ namespace AdventureOfKeven
         private void MoveTo(Location newLocation)
         {
             //Does the location have any required items?
-            if (newLocation.ItemRequiredToEnter != null)
+            if (!_player.HasRequiredItemToEnterThisLocation(newLocation))
             {
-                // See if the player has the required item in their inventory
-                bool playerHasRequiredItem = false;
-
-                foreach (InventoryItem ii in _player.Inventory)
-                {
-                    if (ii.Details.ID == newLocation.ItemRequiredToEnter.ID)
-                    {
-                        //Found required item
-                        playerHasRequiredItem = true;
-                        break; // Exit out of the foreach loop
-                    }
-
-                }
-
-                if (!playerHasRequiredItem)
-                {
-                    //We couldn't find the required item in their inventory, so display a message and stop trying to move.
-                    rtbMessages.Text += "You must have a " + newLocation.ItemRequiredToEnter.Name + " to enter this location." + Environment.NewLine;
-                    return;
-                }
+                rtbMessages.Text += "You must have a " + newLocation.ItemRequiredToEnter.Name + " to enter this location." + Environment.NewLine;
+                return;
             }
 
             // Update the player's current location to the new location.
@@ -141,22 +123,10 @@ namespace AdventureOfKeven
             if (newLocation.QuestAvalaibleHere != null)
             {
                 //Switches to keep track if the player has the quest and if its completed or not.
-                bool playerAlreadyHasQuest = false;
-                bool playerAlreadyHasCompletedQuest = false;
+                bool playerAlreadyHasQuest = _player.HasThisQuest(newLocation.QuestAvalaibleHere);
+                bool playerAlreadyHasCompletedQuest = _player.CompletedThisQuest(newLocation.QuestAvalaibleHere);
 
                 // See if the player already has the quest, and if they've completed it.
-                foreach (PlayerQuest playerQuests in _player.Quests)
-                {
-                    if (playerQuests.Details.ID == newLocation.QuestAvalaibleHere.ID)
-                    {
-                        playerAlreadyHasQuest = true;
-
-                        if (playerQuests.IsCompleted)
-                        {
-                            playerAlreadyHasCompletedQuest = true;
-                        }
-                    }
-                }
 
 
                 // see if the player already has the quest and if its not completed yet.
@@ -164,62 +134,17 @@ namespace AdventureOfKeven
                 {
                     if (!playerAlreadyHasCompletedQuest)
                     {
-                        bool playerHasAllItemsToCompleteQuests = false;
-
-                        //See if the player has the quest item.
-                        foreach (QuestCompletionItem qci in newLocation.QuestAvalaibleHere.QuestCompletionItems)
-                        {
-                            bool foundItemInPlayersInventory = false;
-
-                            foreach (InventoryItem ii in _player.Inventory)
-                            {
-                                //If the a the quest item is found in the player's inventory, look to see if he has the good quantity.
-                                if (ii.Details.ID == qci.Details.ID)
-                                {
-                                    foundItemInPlayersInventory = true;
-                                    //If the quantity is ok, then the player has all the items to complete the quest.
-                                    if (ii.Quantity < qci.Quantity)
-                                    {
-                                        playerHasAllItemsToCompleteQuests = true;
-                                        break;
-                                    }
-                                    //If the player has the item but not the good quantity, break out of the loop.
-                                    break;
-                                }
-                            }
-
-                            //If the item is not found in the players inventory
-                            if (!foundItemInPlayersInventory)
-                            {
-                                //break out of the loop right away
-                                break;
-                            }
-                        }
+                        bool playerHasAllItemsToCompleteQuest = _player.HasAllQuestCompletionItems(newLocation.QuestAvalaibleHere);
 
                         //When the player has all the items to complete a quest
-                        if (playerHasAllItemsToCompleteQuests)
+                        if (playerHasAllItemsToCompleteQuest)
                         {
                             //Display a message
                             rtbMessages.Text += Environment.NewLine;
                             rtbMessages.Text += "You just completed the " + newLocation.QuestAvalaibleHere.Name + " quest." + Environment.NewLine;
 
                             //Remove the quest items from the player's inventory.
-                            //For all the quest completion items in the questcompletion items list of the quest
-                            foreach (QuestCompletionItem qci in newLocation.QuestAvalaibleHere.QuestCompletionItems)
-                            {
-                                //and all the items in the player's inventory
-                                foreach (InventoryItem ii in _player.Inventory)
-                                {
-                                    //If the questcompletion items ID matches the one of the player's item.
-                                    if (ii.Details.ID == qci.Details.ID)
-                                    {
-                                        //Substract the quantity from the player's inventory that was needed to complete the quest.
-                                        ii.Quantity -= qci.Quantity;
-                                        break;
-                                    }
-                                }
-                            }
-
+                            _player.RemoveQuestCompletionItems(newLocation.QuestAvalaibleHere);
 
                             //Give the quest reward to the player.
                             //Displays the messages to the players to inform them of what is happening.
@@ -234,39 +159,11 @@ namespace AdventureOfKeven
                             _player.Gold += newLocation.QuestAvalaibleHere.RewardGold;
 
                             //Add the reward item to the player's inventory.
-                            bool addedItemToPlayerInventory = false;
-
-                            //Look to see if they already have the items in their inventory.
-                            foreach (InventoryItem ii in _player.Inventory)
-                            {
-                                if (ii.Details.ID == newLocation.QuestAvalaibleHere.RewardItem.ID)
-                                {
-                                    //Found item in player's inventory so increase the item quantity by 1.
-                                    ii.Quantity++;
-
-                                    addedItemToPlayerInventory = true;
-
-                                    break;
-                                }
-                            }
-
-
-                            //They didn't have the item, so add it to their inventory, with a quantity of 1
-                            if (!addedItemToPlayerInventory)
-                            {
-                                _player.Inventory.Add(new InventoryItem(newLocation.QuestAvalaibleHere.RewardItem, 1));
-                            }
+                            _player.AddItemToInventory(newLocation.QuestAvalaibleHere.RewardItem);
 
 
                             //After all this, mark the quest as completed
-                            //Find the quest in the player's quest list
-
-                            foreach (PlayerQuest pq in _player.Quests)
-                            {
-                                //Mark the quest as completed.
-                                pq.IsCompleted = true;
-                                break;
-                            }
+                            _player.MarkQuestCompleted(newLocation.QuestAvalaibleHere);
                         }
                     }
 
@@ -334,9 +231,16 @@ namespace AdventureOfKeven
                 btnUseWeapon.Visible = false;
             }
 
+            UpdateInventoryListInUI();
+            UpdateQuestListInUI();
+            UpdateWeaponListInUI();
+            UpdateHealingPotionsListInUI();
 
+        }
+
+        private void UpdateInventoryListInUI()
+        {
             //Refresh the player's inventory list
-
             dgvInventory.RowHeadersVisible = false;
 
             dgvInventory.ColumnCount = 2;
@@ -354,7 +258,10 @@ namespace AdventureOfKeven
                     dgvInventory.Rows.Add(new[] { ii.Details.Name, ii.Quantity.ToString() });
                 }
             }
+        }
 
+        private void UpdateQuestListInUI()
+        {
             //refresh the player's quest list
             dgvQuests.RowHeadersVisible = false;
 
@@ -369,7 +276,10 @@ namespace AdventureOfKeven
             {
                 dgvQuests.Rows.Add(new[] { pq.Details.Name, pq.IsCompleted.ToString() });
             }
+        }
 
+        private void UpdateWeaponListInUI()
+        {
             //refresh player's Weapons list and potions
 
             List<Weapon> weapons = new List<Weapon>();
@@ -400,7 +310,10 @@ namespace AdventureOfKeven
 
                 cboWeapons.SelectedIndex = 0;
             }
+        }
 
+        private void UpdateHealingPotionsListInUI()
+        {
             //Refresh the player's potions combobox
 
             List<HealingPotion> healingPotions = new List<HealingPotion>();
@@ -432,6 +345,7 @@ namespace AdventureOfKeven
                 cboPotions.SelectedIndex = 0;
             }
         }
+
         private void btnUseWeapon_Click(object sender, EventArgs e)
         {
 
