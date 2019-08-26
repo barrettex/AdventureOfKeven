@@ -28,13 +28,13 @@ namespace Engine
         {
             if (location.ItemRequiredToEnter == null)
             {
-            //There is no required item for this location, so return "true"
-            return true;
+                //There is no required item for this location, so return "true"
+                return true;
             }
             //see if the player has the required item in their inventory
             foreach (InventoryItem ii in Inventory)
             {
-                if(ii.Details.ID == location.ItemRequiredToEnter.ID)
+                if (ii.Details.ID == location.ItemRequiredToEnter.ID)
                 {
                     //We found the required item, so return "true"
                     return true;
@@ -55,7 +55,7 @@ namespace Engine
             }
             return false;
         }
-        
+
         public bool CompletedThisQuest(Quest quest)
         {
             foreach (PlayerQuest pq in Quests)
@@ -83,7 +83,7 @@ namespace Engine
                     {
                         foundItemInPlayersInventory = true;
                         //the player does not have enough of this item to complete the quest
-                        if(ii.Quantity < qci.Quantity)
+                        if (ii.Quantity < qci.Quantity)
                         {
                             return false;
                         }
@@ -91,7 +91,7 @@ namespace Engine
                 }
 
                 //If the player doesn't have the item at all
-                if(!foundItemInPlayersInventory)
+                if (!foundItemInPlayersInventory)
                 {
                     return false;
                 }
@@ -102,11 +102,11 @@ namespace Engine
 
         public void RemoveQuestCompletionItems(Quest quest)
         {
-            foreach(QuestCompletionItem qci in quest.QuestCompletionItems)
+            foreach (QuestCompletionItem qci in quest.QuestCompletionItems)
             {
-                foreach(InventoryItem ii in Inventory)
+                foreach (InventoryItem ii in Inventory)
                 {
-                    if(ii.Details.ID == qci.Details.ID)
+                    if (ii.Details.ID == qci.Details.ID)
                     {
                         //substract the quantity of items needed to complete the quest from the player's inventory.
                         ii.Quantity -= qci.Quantity;
@@ -118,7 +118,7 @@ namespace Engine
 
         public void AddItemToInventory(Item itemToAdd)
         {
-            foreach(InventoryItem ii in Inventory)
+            foreach (InventoryItem ii in Inventory)
             {
                 if (ii.Details.ID == itemToAdd.ID)
                 {
@@ -134,10 +134,10 @@ namespace Engine
         public void MarkQuestCompleted(Quest quest)
         {
             //Find the quest in the player's quest list
-            foreach(PlayerQuest pq in Quests)
+            foreach (PlayerQuest pq in Quests)
             {
 
-                if(pq.Details.ID == quest.ID)
+                if (pq.Details.ID == quest.ID)
                 {
                     //Mark it as completed
                     pq.IsCompleted = true;
@@ -148,5 +148,23 @@ namespace Engine
         }
 
 
+        public void ObtainExperiencePoints(int amount)
+        {
+            this.ExperiencePoints += amount;
+        }
+
+        public void ObtainGold(int amount)
+        {
+            this.Gold += amount;
+        }
+
+        public void ObtainMonsterLoots(List<InventoryItem> loots)
+        {
+            foreach(InventoryItem ii in loots)
+            {
+                AddItemToInventory(ii.Details);
+            }
+                
+        }
     }
 }

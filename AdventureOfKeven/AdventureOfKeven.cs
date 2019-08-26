@@ -348,7 +348,51 @@ namespace AdventureOfKeven
 
         private void btnUseWeapon_Click(object sender, EventArgs e)
         {
+            // get the currently selected weapon from the cboWeapons ComboBox
+            Weapon currentWeapon = (Weapon)cboWeapons.SelectedItem;
 
+            //Determine the amount of damage to do to the monster
+            int damageToMonster = RandomNumberGenerator.NumberBetween(currentWeapon.MinimumDamage, currentWeapon.MaximumDamage);
+
+            //Apply the damage to the monster's CurrentHitPoint
+            _currentMonster.CurrentHitPoints -= damageToMonster;
+
+            //Display a message to the player
+            rtbMessages.Text += "You hit the " + _currentMonster.Name + " for " + damageToMonster.ToString() + " points." + Environment.NewLine;
+
+            //Check if the monster is dead
+            if(_currentMonster.CurrentHitPoints <= 0)
+            {
+                //Monster is dead
+                rtbMessages.Text += Environment.NewLine;
+                rtbMessages.Text += "You defeated the " + _currentMonster.Name + "." + Environment.NewLine;
+
+                //give the player the rewards
+                _player.ObtainExperiencePoints(_currentMonster.RewardExperiencePoints);
+                rtbMessages.Text += "You receive " + _currentMonster.RewardExperiencePoints.ToString() + " experience points." + Environment.NewLine;
+
+                //Give the player gold for killing an enemy
+                _player.ObtainGold(_currentMonster.RewardGold);
+                rtbMessages.Text += "You receive " + _currentMonster.RewardGold.ToString() + " gold piece." + Environment.NewLine;
+
+                //Get random loot items from the monster's loottable
+                List<InventoryItem> lootTable = _currentMonster.CreateLootTable(_currentMonster);
+                //Add the looted items to the player's inventory
+                _player.ObtainMonsterLoots(lootTable);
+                //Display the messages
+                foreach(InventoryItem ii in lootTable)
+                {
+                    if(ii.Quantity == 1)
+                    {
+                        rtbMessages.Text += "You loot " + ii.Quantity.ToString() + " " + ii.Details.Name + Environment.NewLine;
+                    }
+                    else
+                    {
+                        rtbMessages.Text += "You loot " + ii.Quantity.ToString() + " " + ii.Details.NamePlural + Environment.NewLine;
+                    }
+                }
+
+            }
         }
 
         private void btnUsePotion_Click(object sender, EventArgs e)
