@@ -12,6 +12,7 @@ namespace Engine
         public Location CurrentLocation { get; set; }
         public List<InventoryItem> Inventory { get; set; }
         public List<PlayerQuest> Quests { get; set; }
+        public bool isAlive { get; set; }
 
 
         public Player(int currentHitPoints, int maximumHitPoints, int gold, int experiencePoints, int level) : base(currentHitPoints, maximumHitPoints)
@@ -19,6 +20,7 @@ namespace Engine
             this.Gold = gold;
             this.ExperiencePoints = experiencePoints;
             this.Level = level;
+            this.isAlive = this.CurrentHitPoints > 0 ? true : false;
 
             Inventory = new List<InventoryItem>();
             Quests = new List<PlayerQuest>();

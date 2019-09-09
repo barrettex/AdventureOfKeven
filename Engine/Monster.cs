@@ -12,6 +12,8 @@ namespace Engine
         public int RewardExperiencePoints { get; set; }
         public int RewardGold { get; set; }
 
+
+
         public List<LootItem> LootTable { get; set; }
 
 
@@ -57,6 +59,23 @@ namespace Engine
             return lootList;
         }
 
+
+
+        public int CalculateDamage(int maximum, int minimum = 0)
+        {
+            int damageDone = RandomNumberGenerator.NumberBetween(minimum, maximum);
+            return damageDone;
+        }
+
+
+        //public bool isAlive()
+        //{
+        //    if(this.CurrentHitPoints <= 0)
+        //    {
+        //        return false;
+        //    }
+        //    return true;
+        //}
 
 
     }

@@ -19,30 +19,34 @@ namespace AdventureOfKeven
 
 
         //Methods to update the main stats
-        private void updateUI()
+        private void UpdateUI()
         {
             lblHitPoints.Text = _player.CurrentHitPoints.ToString();
             lblGold.Text = _player.Gold.ToString();
             lblExperience.Text = _player.ExperiencePoints.ToString();
             lblLevel.Text = _player.Level.ToString();
+            UpdateInventoryListInUI();
+            UpdateHealingPotionsListInUI();
+            UpdateQuestListInUI();
+            UpdateWeaponListInUI();
         }
 
-        private void updateUIHitPoints()
+        private void UpdateUIHitPoints()
         {
             lblHitPoints.Text = _player.CurrentHitPoints.ToString();
         }
 
-        private void updateUIGold()
+        private void UpdateUIGold()
         {
             lblGold.Text = _player.Gold.ToString();
         }
 
-        private void updateUIExp()
+        private void UpdateUIExp()
         {
             lblExperience.Text = _player.ExperiencePoints.ToString();
         }
 
-        private void updateUILevel()
+        private void UpdateUILevel()
         {
             lblLevel.Text = _player.Level.ToString();
         }
@@ -58,7 +62,7 @@ namespace AdventureOfKeven
             _player.Inventory.Add(new InventoryItem(World.ItemByID(World.ITEM_ID_RUSTY_SWORD), 1));
 
             //Displays the variables to string on the UI
-            updateUI();
+            UpdateUI();
         }
 
         private void AdventureOfKeven_Load(object sender, EventArgs e)
@@ -116,7 +120,7 @@ namespace AdventureOfKeven
             // Completely Heal the player
             _player.CurrentHitPoints = _player.MaximumHitPoints;
             //Update hit points in UI
-            updateUIHitPoints();
+            UpdateUIHitPoints();
 
             // Does the location have a quest?
 
@@ -361,7 +365,7 @@ namespace AdventureOfKeven
             rtbMessages.Text += "You hit the " + _currentMonster.Name + " for " + damageToMonster.ToString() + " points." + Environment.NewLine;
 
             //Check if the monster is dead
-            if(_currentMonster.CurrentHitPoints <= 0)
+            if(!_currentMonster.isAlive)
             {
                 //Monster is dead
                 rtbMessages.Text += Environment.NewLine;
@@ -392,11 +396,106 @@ namespace AdventureOfKeven
                     }
                 }
 
+                //Update all the UI
+                UpdateUI();
+
+                // Add a blank line to the messages box, just for appearance.
+
+                rtbMessages.Text += Environment.NewLine;
+
+                // Move the the player to the current location (to heal player and create a new monster to fight)
+                MoveTo(_player.CurrentLocation);
+            }
+            else
+            {
+                //Monster is still alive
+
+                //Determine the amount of damage the monster does to the player
+                int damageToPlayer = RandomNumberGenerator.NumberBetween(0, _currentMonster.MaximumDamage);
+
+                if(damageToPlayer == 0)
+                {
+                    rtbMessages.Text += "The " + _currentMonster.Name + " misses you!" + Environment.NewLine;
+                }
+                else
+                {
+                    rtbMessages.Text += "The " + _currentMonster.Name + " did " + damageToPlayer.ToString() + " points of damage!" + Environment.NewLine;
+                }
+
+                //Substract the damage from the player's health.
+                _player.CurrentHitPoints -= damageToPlayer;
+
+                //Refresh Data in UI
+                UpdateUIHitPoints();
+
+                if(_player.CurrentHitPoints <= 0)
+                {
+                    //display message
+                    rtbMessages.Text += "The " + _currentMonster + " killed you " + Environment.NewLine;
+
+                    // Move player to "home"
+                    MoveTo(World.LocationByID(World.LOCATION_ID_HOME));
+                }
             }
         }
 
         private void btnUsePotion_Click(object sender, EventArgs e)
         {
+
+            //Get the currently selected potion from the combobox
+            HealingPotion potion = (HealingPotion)cboPotions.SelectedItem;
+
+            //Add healing amount to the player's current hitpoint
+            _player.CurrentHitPoints = (_player.CurrentHitPoints + potion.AmountToHeal);
+
+            //CurrentHitPoints cannot exceed player's MaximumHitPoints
+            if(_player.CurrentHitPoints < _player.MaximumHitPoints)
+            {
+                _player.CurrentHitPoints = _player.CurrentHitPoints;
+            }
+
+            //remove the potion from the player's inventory
+            foreach(InventoryItem ii in _player.Inventory)
+            {
+                if(ii.Details.ID == potion.ID)
+                {
+                    ii.Quantity--;
+                    break;
+                }
+            }
+
+            //Display message
+            rtbMessages.Text += "You drink a " + potion.Name + Environment.NewLine;
+
+            //Monster gets their turn to attack
+
+            //Determine the amount of damage the monster does to the player
+            int damageToPlayer = _currentMonster.CalculateDamage(_currentMonster.MaximumDamage);
+
+            //If monster misses
+            if(damageToPlayer == 0)
+            {
+                rtbMessages.Text += "The " + _currentMonster.Name + " misses you." + Environment.NewLine;
+            }
+
+            //display DAMAGE message
+            rtbMessages.Text += "The " + _currentMonster.Name + " hits you for " + damageToPlayer + " point of damage." + Environment.NewLine;
+
+            //substract the damage from the player's current hitpoint
+            _player.CurrentHitPoints -= damageToPlayer;
+
+            //See if player is dead
+            if(!_player.isAlive)
+            {
+                //display message
+                rtbMessages.Text += "The " + _currentMonster.Name + " killed you." + Environment.NewLine;
+
+                //Move player to "Home"
+                MoveTo(World.LocationByID(World.LOCATION_ID_HOME));
+            }
+
+            //Refresh the player's data in UI
+            UpdateUI();
 
         }
     }
