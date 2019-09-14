@@ -48,14 +48,16 @@ namespace Engine
 
         public bool HasThisQuest(Quest quest)
         {
-            foreach (PlayerQuest pq in Quests)
-            {
-                if (pq.Details.ID == quest.ID)
-                {
-                    return true;
-                }
-            }
-            return false;
+
+                    foreach (PlayerQuest pq in Quests)
+                    {
+                        if (pq.Details.ID == quest.ID)
+                        {
+                            return true;
+                        }
+                    }
+                    return false;
+
         }
 
         public bool CompletedThisQuest(Quest quest)

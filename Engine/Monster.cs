@@ -11,6 +11,7 @@ namespace Engine
         public int MaximumDamage { get; set; }
         public int RewardExperiencePoints { get; set; }
         public int RewardGold { get; set; }
+        public bool isAlive { get; set; }
 
 
 
@@ -24,6 +25,8 @@ namespace Engine
             this.MaximumDamage = maximumDamage;
             this.RewardExperiencePoints = rewardExperiencePoints;
             this.RewardGold = rewardGold;
+            this.isAlive = this.CurrentHitPoints > 0 ? true : false;
+
 
             this.LootTable = new List<LootItem>();
         }

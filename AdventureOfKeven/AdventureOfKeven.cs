@@ -57,7 +57,7 @@ namespace AdventureOfKeven
         {
             InitializeComponent();
 
-            _player = new Player(10, 10, 20, 0, 1);
+            _player = new Player(15, 15, 20, 0, 1);
             MoveTo(World.LocationByID(World.LOCATION_ID_HOME));
             _player.Inventory.Add(new InventoryItem(World.ItemByID(World.ITEM_ID_RUSTY_SWORD), 1));
 
@@ -110,7 +110,7 @@ namespace AdventureOfKeven
             btnNorth.Visible = (newLocation.LocationToNorth != null);
             btnEast.Visible = (newLocation.LocationToEast != null);
             btnSouth.Visible = (newLocation.LocationToSouth != null);
-            btnWest.Visible = (newLocation.LocationToSouth != null);
+            btnWest.Visible = (newLocation.LocationToWest != null);
 
             //Display current location name and description
 
@@ -172,32 +172,33 @@ namespace AdventureOfKeven
                     }
 
                 }
-            }
-            else
-            {
-                //The player does not already have the quest
-
-                //Display the messages
-                rtbMessages.Text += "You receive the " + newLocation.QuestAvalaibleHere.Name + " quest." + Environment.NewLine;
-                rtbMessages.Text += newLocation.QuestAvalaibleHere.Description + Environment.NewLine;
-                rtbMessages.Text += "To complete it, return with: " + Environment.NewLine;
-
-                foreach (QuestCompletionItem qci in newLocation.QuestAvalaibleHere.QuestCompletionItems)
+                else 
                 {
-                    //If the quantity required for the quest is only one, write the singular item name
-                    if (qci.Quantity == 1)
+                    //The player does not already have the quest
+
+                    //Display the messages
+                
+                    rtbMessages.Text += "You receive the " + newLocation.QuestAvalaibleHere.Name + " quest." + Environment.NewLine;
+                    rtbMessages.Text += newLocation.QuestAvalaibleHere.Description + Environment.NewLine;
+                    rtbMessages.Text += "To complete it, return with: " + Environment.NewLine;
+
+                    foreach (QuestCompletionItem qci in newLocation.QuestAvalaibleHere.QuestCompletionItems)
                     {
-                        rtbMessages.Text += qci.Quantity.ToString() + " " + qci.Details.Name + Environment.NewLine;
+                        //If the quantity required for the quest is only one, write the singular item name
+                        if (qci.Quantity == 1)
+                        {
+                            rtbMessages.Text += qci.Quantity.ToString() + " " + qci.Details.Name + Environment.NewLine;
+                        }
+                        //Otherwise write the plural name.
+                        else
+                        {
+                            rtbMessages.Text += qci.Quantity.ToString() + " " + qci.Details.NamePlural + Environment.NewLine;
+                        }
                     }
-                    //Otherwise write the plural name.
-                    else
-                    {
-                        rtbMessages.Text += qci.Quantity.ToString() + " " + qci.Details.NamePlural + Environment.NewLine;
-                    }
+                    rtbMessages.Text += Environment.NewLine;
+                    //Add the quest to the player's quest list
+                    _player.Quests.Add(new PlayerQuest(newLocation.QuestAvalaibleHere));
                 }
-                rtbMessages.Text += Environment.NewLine;
-                //Add the quest to the player's quest list
-                _player.Quests.Add(new PlayerQuest(newLocation.QuestAvalaibleHere));
             }
 
             //Does the location have a monster?
@@ -362,7 +363,14 @@ namespace AdventureOfKeven
             _currentMonster.CurrentHitPoints -= damageToMonster;
 
             //Display a message to the player
-            rtbMessages.Text += "You hit the " + _currentMonster.Name + " for " + damageToMonster.ToString() + " points." + Environment.NewLine;
+            if(damageToMonster != 0)
+            {
+                rtbMessages.Text += "You hit the " + _currentMonster.Name + " for " + damageToMonster.ToString() + " points." + Environment.NewLine;                
+            }
+            else
+            {
+                rtbMessages.Text += "You miss the " + _currentMonster.Name + "." + Environment.NewLine;
+            }
 
             //Check if the monster is dead
             if(!_currentMonster.isAlive)
@@ -431,7 +439,7 @@ namespace AdventureOfKeven
                 if(_player.CurrentHitPoints <= 0)
                 {
                     //display message
-                    rtbMessages.Text += "The " + _currentMonster + " killed you " + Environment.NewLine;
+                    rtbMessages.Text += "The " + _currentMonster.Name + " killed you " + Environment.NewLine;
 
                     // Move player to "home"
                     MoveTo(World.LocationByID(World.LOCATION_ID_HOME));
