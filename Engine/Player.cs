@@ -64,7 +64,10 @@ namespace Engine
             {
                 if (pq.Details.ID == quest.ID)
                 {
-                    return true;
+                    if (pq.IsCompleted == true)
+                    {
+                        return true;
+                    }
                 }
             }
             return false;
@@ -118,19 +121,19 @@ namespace Engine
             }
         }
 
-        public void AddItemToInventory(Item itemToAdd)
+        public void AddItemToInventory(Item itemToAdd,int amount = 1)
         {
             foreach (InventoryItem ii in Inventory)
             {
                 if (ii.Details.ID == itemToAdd.ID)
                 {
                     //If they have the item in their inventory, add 1 to its quantity
-                    ii.Quantity++;
+                    ii.Quantity += amount;
                     return;
                 }
             }
             //If they didn't have the item in their inventory add it to the inventory, with a quantity of 1
-            Inventory.Add(new InventoryItem(itemToAdd, 1));
+            Inventory.Add(new InventoryItem(itemToAdd, amount));
         }
 
         public void MarkQuestCompleted(Quest quest)

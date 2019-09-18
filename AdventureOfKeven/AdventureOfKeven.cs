@@ -57,9 +57,10 @@ namespace AdventureOfKeven
         {
             InitializeComponent();
 
-            _player = new Player(15, 15, 20, 0, 1);
+            _player = new Player(10, 10, 20, 0, 1);
             MoveTo(World.LocationByID(World.LOCATION_ID_HOME));
-            _player.Inventory.Add(new InventoryItem(World.ItemByID(World.ITEM_ID_RUSTY_SWORD), 1));
+            _player.AddItemToInventory(World.ItemByID(World.ITEM_ID_RUSTY_SWORD));
+            _player.AddItemToInventory(World.ItemByID(World.ITEM_ID_HEALING_POTION), 2);
 
             //Displays the variables to string on the UI
             UpdateUI();
@@ -323,6 +324,7 @@ namespace AdventureOfKeven
 
             List<HealingPotion> healingPotions = new List<HealingPotion>();
 
+
             foreach (InventoryItem ii in _player.Inventory)
             {
                 if (ii.Details is HealingPotion)
@@ -453,8 +455,11 @@ namespace AdventureOfKeven
             //Get the currently selected potion from the combobox
             HealingPotion potion = (HealingPotion)cboPotions.SelectedItem;
 
+            //Randomize Healing amount
+            int amountToHeal = RandomNumberGenerator.NumberBetween(potion.AmountToHeal, potion.AmountToHeal + 3);
+            
             //Add healing amount to the player's current hitpoint
-            _player.CurrentHitPoints = (_player.CurrentHitPoints + potion.AmountToHeal);
+            _player.CurrentHitPoints = (_player.CurrentHitPoints + amountToHeal);
 
             //CurrentHitPoints cannot exceed player's MaximumHitPoints
             if(_player.CurrentHitPoints < _player.MaximumHitPoints)
@@ -473,7 +478,7 @@ namespace AdventureOfKeven
             }
 
             //Display message
-            rtbMessages.Text += "You drink a " + potion.Name + Environment.NewLine;
+            rtbMessages.Text += "You drink a " + potion.Name + " and regain " + amountToHeal + " Hit Points." + Environment.NewLine;
 
             //Monster gets their turn to attack
 
