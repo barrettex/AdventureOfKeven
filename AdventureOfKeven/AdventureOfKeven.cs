@@ -373,7 +373,7 @@ namespace AdventureOfKeven
             }
 
             //Check if the monster is dead
-            if(!_currentMonster.isAlive)
+            if(!_currentMonster.isAlive())
             {
                 //Monster is dead
                 rtbMessages.Text += Environment.NewLine;
@@ -436,7 +436,7 @@ namespace AdventureOfKeven
                 //Refresh Data in UI
                 UpdateUIHitPoints();
 
-                if(_player.CurrentHitPoints <= 0)
+                if(!_player.isAlive())
                 {
                     //display message
                     rtbMessages.Text += "The " + _currentMonster.Name + " killed you " + Environment.NewLine;
@@ -493,7 +493,7 @@ namespace AdventureOfKeven
             _player.CurrentHitPoints -= damageToPlayer;
 
             //See if player is dead
-            if(!_player.isAlive)
+            if(!_player.isAlive())
             {
                 //display message
                 rtbMessages.Text += "The " + _currentMonster.Name + " killed you." + Environment.NewLine;
